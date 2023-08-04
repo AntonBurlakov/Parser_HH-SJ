@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "parser-vacancies"
+version = "0.1.0"
+description = ""
+authors = ["Burlakov Anton <burlakovanton99@yandex.ru>"]
+readme = "README.md"
+packages = [{include = "parser_vacancies"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+python-dotenv = "^1.0.0"
+flake8 = "^6.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

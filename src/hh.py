@@ -1,9 +1,8 @@
-import json
-from pprint import pprint
-
 import requests
 
+from src.json_saver import JSONSaver
 from src.site_api import API
+from src.vacancy import Vacancy
 
 
 class HeadHunterAPI(API):
@@ -31,17 +30,27 @@ class HeadHunterAPI(API):
             data = response.json()
             vacancies = data.get("items")
 
-            self.to_json(vacancies, "json_hh.json")
+            result = []
+            json_saver = JSONSaver()
 
-            return vacancies
+            for vacancy in vacancies:
+                salary = vacancy.get('salary')
+                salary_form = None
+                salary_to = None
+                if salary:
+                    salary_form = salary['from']
+                    salary_to = salary['to']
+                vacancy_object = Vacancy(
+                    vacancy['name'],
+                    vacancy['alternate_url'],
+                    "",
+                    vacancy['snippet']['requirement'],
+                    salary_form,
+                    salary_to,
+                )
+                json_saver.add_vacancy(vacancy_object)
+                result.append(vacancy_object)
 
+            return result
         else:
             print(f'Ошибка {response.status_code}')
-
-
-
-    def get_10(self):
-        return self.va[:10]
-
-    def get_sorted(self):
-        return sorted(self.va, key=lambda x: x['cost'])

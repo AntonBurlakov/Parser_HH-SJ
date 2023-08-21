@@ -1,30 +1,78 @@
-from abc import ABC
 
-from src.site_api import API
+from dataclasses import dataclass
+from typing import re
 
 
-class Vacancy(API):
-    def __init__(self, path):
-        self.path = path
-        self.vacancies = self.get_vacancies(keyword='')
-        self.name = self.vacancies["name"]
-        self.url = self.vacancies["alternate_url"]
-        self.salary_from = self.vacancies["salary"]["from"]
-        self.salary_to = self.vacancies["salary"]["to"]
-        self.salary = f'{self.salary_from} - {self.salary_to}'
-        self.requirements = self.vacancies["snippet"]["requirement"]
+@dataclass
+class Vacancy:
+    name: str
+    url: str
+    salary: str
+    requirements: str
+    salary_from: int = None
+    salary_to: int = None
+
+    def __str__(self):
+        """Вернуть название вакансии.
+
+        return:
+            название вакансии
+        """
+        return self.name
+
+    def __repr__(self):
+        """Вернуть название вакансии.
+
+        return:
+            название вакансии
+        """
+        return self.name
 
     def __gt__(self, other):
-        return self.salary > other.salary
+        """Сравнить вакансии по зарплате.
 
-    def __eq__(self, other):
-        return self.salary == other.salary
+        Args:
+            other (Vacancy): объект, с которым сравниваем текущий объект
 
+        return:
+            критерий сравнения
+        """
+        return self.avg_salary() > other.avg_salary()
 
+    def parse_salary(self):
+        salary_from, salary_to = re.findall(r'[\d\s]+', self.salary)
+        self.salary_from = int(salary_from.replace(' ', ''))
+        self.salary_to = int(salary_to.replace(' ', ''))
 
+    def get_salary(self):
+        if self.salary:
+            self.parse_salary()
+        else:
+            if self.salary_from and self.salary_to:
+                self.salary = '{0}-{1} руб.'.format(
+                    self.salary_from, self.salary_to,
+                )
+            elif self.salary_from and not self.salary_to:
+                self.salary = 'от {0} руб.'.format(self.salary_from)
+            elif not self.salary_from and self.salary_to:
+                self.salary = 'до {0} руб.'.format(self.salary_to)
 
+    def avg_salary(self):
+        """Вернуть зарплату по вакансии для сравнения.
 
+        return:
+            зарплату по вакансии для сравнения
+        """
+        if self.salary_from:
+            return self.salary_from
+        elif self.salary_to:
+            return self.salary_to
+        return 0
 
+    def serialize(self):
+        """Вернуть свойства объекта в виде словаря.
 
-
-#vacancy = Vacancy("Python Developer", "<https://hh.ru/vacancy/123456>", "100 000-150 000 руб.", "Требования: опыт работы от 3 лет...")
+        return:
+            свойства объекта в виде словаря
+        """
+        return self.__dict__
